@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Jogo do Quadrado</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f0f0f0;
+    }
+
+    #game-area {
+      position: relative;
+      width: 600px;
+      height: 400px;
+      margin: 20px auto;
+      background-color: #ddd;
+      border: 2px solid #333;
+    }
+
+    .square {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      cursor: pointer;
+    }
+
+    #controls, #share-controls {
+      margin: 20px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 5px;
+    }
+
+    #timer {
+      font-size: 18px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Jogo do Quadrado</h1>
+
+  <div id="controls">
+    <button id="start-btn">▶️ Iniciar Jogo</button>
+    <p>⏱️ Tempo restante: <span id="timer">120</span> segundos</p>
+    <p>🏆 Pontos: <span id="score">0</span></p>
+  </div>
+
+  <div id="share-controls">
+    <button id="speak-btn">🔊 Falar Pontos</button>
+    <button id="whatsapp-btn">📤 Compartilhar no WhatsApp</button>
+  </div>
+
+  <div id="game-area"></div>
+
+  <script>
+    const gameArea = document.getElementById("game-area");
+    const scoreDisplay = document.getElementById("score");
+    const timerDisplay = document.getElementById("timer");
+    const startBtn = document.getElementById("start-btn");
+
+    let score = 0;
+    let timeLeft = 120;
+    let squareRate = 1;
+    let gameInterval;
+    let timerInterval;
+
+    function createSquare(quantity = 1) {
+      for (let i = 0; i < quantity; i++) {
+        const square = document.createElement("div");
+        square.classList.add("square");
+
+        const x = Math.random() * (gameArea.clientWidth - 50);
+        const y = Math.random() * (gameArea.clientHeight - 50);
+
+        square.style.left = `${x}px`;
+        square.style.top = `${y}px`;
+
+        const colors = ["red", "blue", "green", "orange", "purple", "yellow", "pink", "cyan", "lime"];
+        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+        square.style.backgroundColor = randomColor;
+
+        square.addEventListener("click", () => {
+          score++;
+          scoreDisplay.textContent = score;
+          gameArea.removeChild(square);
+        });
+
+        gameArea.appendChild(square);
+
+        setTimeout(() => {
+          if (gameArea.contains(square)) {
+            gameArea.removeChild(square);
+          }
+        }, 1000);
+      }
+    }
+
+    function startGame() {
+      score = 0;
+      timeLeft = 120;
+      squareRate = 1;
+      scoreDisplay.textContent = score;
+      timerDisplay.textContent = timeLeft;
+      startBtn.disabled = true;
+
+      gameInterval = setInterval(() => {
+        createSquare(squareRate);
+      }, 1000);
+
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = timeLeft;
+
+        squareRate++; // Aumenta a quantidade de quadrados por segundo
+
+        if (timeLeft <= 0) {
+          clearInterval(gameInterval);
+          clearInterval(timerInterval);
+          startBtn.disabled = false;
+          alert("⏰ Tempo esgotado! Pontuação final: " + score);
+        }
+      }, 1000);
+    }
+
+    startBtn.addEventListener("click", startGame);
+
+    document.getElementById("speak-btn").addEventListener("click", () => {
+      const message = `Você fez ${score} pontos no Jogo do Quadrado!`;
+      const utterance = new SpeechSynthesisUtterance(message);
+      utterance.lang = "pt-BR";
+      speechSynthesis.speak(utterance);
+    });
+
+    document.getElementById("whatsapp-btn").addEventListener("click", () => {
+      const text = `Acabei de jogar o Jogo do Quadrado e fiz ${score} pontos! 🟥🏆`;
+      const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+      window.open(url, "_blank");
+    });
+  </script>
+</body>
+</html>
